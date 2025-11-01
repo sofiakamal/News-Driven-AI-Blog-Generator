@@ -1,0 +1,496 @@
+{
+  "name": "Final Agent Blog Post",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### Prompt Trigger",
+        "height": 344,
+        "width": 244
+      },
+      "id": "c4b196c8-b49d-4a79-b03f-f37012d8ffd2",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        912,
+        -384
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### Content Topic (trend) Selection",
+        "height": 344,
+        "width": 796,
+        "color": 3
+      },
+      "id": "d78edc26-39cd-48f3-aec6-a0b236df02be",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1184,
+        -384
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### Document Creation & Update",
+        "height": 360,
+        "width": 476,
+        "color": 2
+      },
+      "id": "c9acfca5-6a36-41c1-a917-60fed941f7ba",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1808,
+        -16
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### AI Blog Generation",
+        "height": 488,
+        "width": 436,
+        "color": 5
+      },
+      "id": "be6caa89-cc80-4b13-9e73-7db2a1e0ff2d",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1360,
+        -16
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert AI blog writer. \nYour task is to write a complete, SEO-friendly blog post using ONLY the real information provided in the \"Article Data\" section. \nDo NOT invent, assume, or hallucinate any facts beyond what is given. \nIf some information is missing, omit it rather than guessing.\n\nFormatting Requirements:\n- Blog Title: Use the provided title as a base, make it catchy and under 60 characters.\n- Introduction: 4–5 engaging sentences summarizing the topic.\n- Body: Well-structured with clear subheadings (## in Markdown).\n- Use bullet points or numbered lists where relevant.\n- Include factual quotes or stats from the article where possible.\n- Conclusion: 4–5 sentences summarizing the article and giving a takeaway.\n- Keep tone professional yet easy to read.\n- Output must be in clean **Markdown format**, ready for posting without edits.\n\nArticle Data:\nTitle:  {{ $('Loop Over Items').item.json.title }}\nArticle Link: {{ $('Loop Over Items').item.json.link }}\nLink Output for information reference: {{ $json.cleanedArticleText }}\n\nOutput the blog post only, no extra explanation.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        1440,
+        112
+      ],
+      "id": "32777f8b-dd57-45df-93b4-f5b1a2e54c2d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "folderId": "1wq7qUUG_MUdNGLa3yJ3FVADDAdLby3Qh",
+        "title": "=Blog Post: {{ $now }}"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1904,
+        112
+      ],
+      "id": "58e1f93d-4946-4b4d-b72d-2af8610b61c2",
+      "name": "Create a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "yHZOUSOc2CqBtj3g",
+          "name": "Google Docs account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $('AI Agent').item.json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        2096,
+        112
+      ],
+      "id": "b67fb0ef-fe6a-4ff9-b290-0c6bacc720c4",
+      "name": "Update a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "yHZOUSOc2CqBtj3g",
+          "name": "Google Docs account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine",
+              "value": "google_news"
+            },
+            {
+              "name": "q",
+              "value": "={{ $json.chatInput }}"
+            },
+            {
+              "name": "api_key",
+              "value": "80e618bf804c88271a5b62dc8664b7275c3b6812a96d454c2dccc747b0ad38a4"
+            },
+            {
+              "name": "gl",
+              "value": "in"
+            },
+            {
+              "name": "json_restrictor",
+              "value": "news_results[].{title,link}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1232,
+        -272
+      ],
+      "id": "2ac93b98-eae9-489c-89ca-56214c76a53d",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        992,
+        -272
+      ],
+      "id": "a56aafb5-1cd9-4b04-852e-3a4a607c4b32",
+      "name": "When chat message received",
+      "webhookId": "a29910d9-aeef-46d6-abba-1a745ae22571"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.link }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1008,
+        112
+      ],
+      "id": "01fd9fff-79e6-480d-86a2-3946e12377fc",
+      "name": "HTTP Request1",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get raw HTML from the HTTP node output\nlet htmlContent = $input.first().json.data;\n\n// Function to clean and extract meaningful text\nfunction extractBlogText(html) {\n  // Remove script and style tags completely (including their content)\n  html = html.replace(/<script\\b[^<]*(?:(?!<\\/script>)<[^<]*)*<\\/script>/gi, '');\n  html = html.replace(/<style\\b[^<]*(?:(?!<\\/style>)<[^<]*)*<\\/style>/gi, '');\n  \n  // Remove other non-content tags\n  html = html.replace(/<(nav|header|footer|aside|menu|form|input|button)[^>]*>.*?<\\/\\1>/gsi, '');\n  \n  // Remove comments\n  html = html.replace(/<!--[\\s\\S]*?-->/g, '');\n  \n  // Priority selectors for main content (try to find article/main content first)\n  const contentSelectors = [\n    /<(article|main)[^>]*>([\\s\\S]*?)<\\/\\1>/gi,\n    /<div[^>]*class[^>]*(?:content|article|post|blog|entry|text)[^>]*>([\\s\\S]*?)<\\/div>/gi,\n    /<div[^>]*id[^>]*(?:content|article|post|blog|entry|text)[^>]*>([\\s\\S]*?)<\\/div>/gi,\n    /<section[^>]*class[^>]*(?:content|article|post|blog|entry|text)[^>]*>([\\s\\S]*?)<\\/section>/gi\n  ];\n  \n  let extractedContent = '';\n  \n  // Try to find main content using selectors\n  for (const selector of contentSelectors) {\n    const matches = html.match(selector);\n    if (matches && matches.length > 0) {\n      extractedContent = matches.join(' ');\n      break;\n    }\n  }\n  \n  // If no specific content found, use the whole HTML but prioritize paragraphs and headings\n  if (!extractedContent) {\n    const textElements = html.match(/<(h[1-6]|p|div|span|li)[^>]*>([\\s\\S]*?)<\\/\\1>/gi);\n    if (textElements) {\n      extractedContent = textElements.join(' ');\n    } else {\n      extractedContent = html;\n    }\n  }\n  \n  // Remove all remaining HTML tags\n  extractedContent = extractedContent.replace(/<[^>]*>/g, ' ');\n  \n  // Decode HTML entities\n  extractedContent = extractedContent\n    .replace(/&quot;/g, '\"')\n    .replace(/&apos;/g, \"'\")\n    .replace(/&lt;/g, '<')\n    .replace(/&gt;/g, '>')\n    .replace(/&amp;/g, '&')\n    .replace(/&#(\\d+);/g, (match, dec) => String.fromCharCode(dec))\n    .replace(/&#x([a-fA-F0-9]+);/g, (match, hex) => String.fromCharCode(parseInt(hex, 16)));\n  \n  // Clean up whitespace\n  extractedContent = extractedContent\n    .replace(/\\s+/g, ' ')  // collapse multiple spaces\n    .replace(/\\n\\s*\\n/g, '\\n')  // remove empty lines\n    .trim();\n  \n  // Remove common navigation/footer text patterns\n  extractedContent = extractedContent\n    .replace(/(?:home|about|contact|privacy|terms|cookie|subscribe|follow|share|like|tweet|facebook|twitter|instagram|linkedin|youtube|newsletter)[\\s\\w]*(?:\\||•|\\/|,|\\s)*\\s*/gi, '')\n    .replace(/^\\s*\\||\\|\\s*$/g, '')  // remove leading/trailing pipes\n    .replace(/^[\\s\\W]*|[\\s\\W]*$/g, '');  // remove leading/trailing special chars\n  \n  return extractedContent;\n}\n\n// Extract the blog text\nlet cleanedText = extractBlogText(htmlContent);\n\n// Filter out very short content (likely not main article content)\nconst sentences = cleanedText.split(/[.!?]+/).filter(s => s.trim().length > 20);\nif (sentences.length > 0) {\n  cleanedText = sentences.join('. ').trim();\n}\n\n// Limit size if needed\nconst maxChars = 5000;\nif (cleanedText.length > maxChars) {\n  // Try to cut at sentence boundary\n  const truncated = cleanedText.substring(0, maxChars);\n  const lastSentenceEnd = Math.max(\n    truncated.lastIndexOf('.'),\n    truncated.lastIndexOf('!'),\n    truncated.lastIndexOf('?')\n  );\n  \n  if (lastSentenceEnd > maxChars * 0.8) {\n    cleanedText = truncated.substring(0, lastSentenceEnd + 1);\n  } else {\n    cleanedText = truncated + \"...\";\n  }\n}\n\n// Validate we have meaningful content\nif (cleanedText.length < 50) {\n  cleanedText = \"Warning: Very little text content found. The page might be heavily JavaScript-based or the content structure is unusual.\";\n}\n\nreturn [\n  {\n    json: {\n      cleanedArticleText: cleanedText,\n      originalLength: htmlContent.length,\n      extractedLength: cleanedText.length\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        112
+      ],
+      "id": "9171a91e-d8ee-4365-96a7-dcfa7bfab5bf",
+      "name": "Code",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        800,
+        96
+      ],
+      "id": "b9ddb94e-4495-486d-8141-a2094c2fdc5f",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "news_results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        -272
+      ],
+      "id": "6b451b24-da2d-4a2d-87d2-4d59b8192b68",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "maxItems": 2
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        -272
+      ],
+      "id": "e45991c5-bc66-478a-8fdf-adb0b34769d0",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b2c8959f-e2bd-46e1-b6ae-fc110e4d6ffa",
+              "leftValue": "={{ $json.link }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1632,
+        -272
+      ],
+      "id": "007b7794-7844-4730-b020-2a3241080c33",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "content": "### Process Each Topic",
+        "height": 352,
+        "width": 608,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        736,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "ae35c8c9-d54a-4fd3-9dc2-7a64f42c3a83",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        336
+      ],
+      "id": "3a2a9c72-ac3a-4c69-8063-ab24478d8014",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "pjIOIBOhgxknqijq",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite-preview-06-17",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        4944,
+        160
+      ],
+      "id": "323762dc-d00f-4f84-919c-5807de4bd287",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "sw0TS6DHHledWGh9",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Create a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a document": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a0a2bf65-f77f-4c8a-bc83-71d0f4c5dc6e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5ac5fb763c05ed4e6fd4031663516e63dd3fe78a4c502aeb280fde34085c717a"
+  },
+  "id": "3A1g3PvGMR4WMZtp",
+  "tags": []
+}
